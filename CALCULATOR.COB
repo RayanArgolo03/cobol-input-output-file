@@ -16,48 +16,56 @@
       *****************************************************************
        WORKING-STORAGE SECTION.
       *****************************************************************
-       01 PESSOA.
-           03 PRIMEIRO-NOME PIC X(10) VALUE SPACES.  
-           03 DATA-NASCIMENTO.
-               05 DIA PIC 9(02) VALUE ZEROS.    
-               05 MES PIC 9(02) VALUE ZEROS.    
-               05 ANO PIC 9(04) VALUE ZEROS.    
-           03 SALARIO-NUMERICO PIC 9(06)V99 VALUE ZEROS.
-           03 SALARIO-FORMATADO PIC $ZZZZ,99 VALUE ZEROS.
-           03 SEXO PIC X(01).
-               88 MASCULINO VALUE 'M'.
-               88 FEMININO VALUE 'F'.
-           03 GENERO PIC X(10) VALUE SPACES.
+       77 OPERANDO-1 PIC S9(04) VALUE ZEROS.
+       77 OPERANDO-2 PIC S9(04) VALUE ZEROS.
+       77 RES-NUMERICO PIC S9(04) VALUE ZEROS.
+       77 RES-FORMATADO PIC ZZZZ9 VALUE ZEROS.
+       77 OPERADOR PIC X(01).
+           88 ADICAO VALUE '+'.
+           88 SUBTRACAO VALUE '-'.
+           88 MULTIPLICACAO VALUE '*'.
+           88 DIVISAO VALUE '/'.
       *****************************************************************
        PROCEDURE DIVISION.
       *****************************************************************
-           PERFORM 001-RECEBER-VALORES. 
-           PERFORM 002-DEFINIR-GENERO.     
-           PERFORM 003-IMPRIMIR-VALORES.
+           PERFORM 001-RECEBER-VALORES.
+           PERFORM 002-RECEBER-OPERACAO.
+           PERFORM 003-CALCULAR. 
+           PERFORM 004-IMPRIMIR-RESULTADO.
            STOP RUN.
       *****************************************************************
        001-RECEBER-VALORES SECTION.
-           DISPLAY 'First name: '.
-           ACCEPT PRIMEIRO-NOME FROM CONSOLE.
-           DISPLAY 'Birth date: '.
-           ACCEPT DATA-NASCIMENTO FROM CONSOLE.
-           DISPLAY 'Salary: '.
-           ACCEPT SALARIO-NUMERICO FROM CONSOLE.
-           MOVE SALARIO-NUMERICO TO SALARIO-FORMATADO.
-           DISPLAY 'Sex: (M for male F for female)'
-           ACCEPT SEXO FROM CONSOLE.
+           DISPLAY 'First number: '.
+           ACCEPT OPERANDO-1 FROM CONSOLE.
+           DISPLAY 'Second number: '.
+           ACCEPT OPERANDO-2 FROM CONSOLE.
+           DISPLAY '======== ======= ======='.
       *****************************************************************
-       002-DEFINIR-GENERO SECTION.
-           IF MASCULINO MOVE 'Male' TO GENERO
-           ELSE MOVE 'Female' TO GENERO
-           END-IF.
+       002-RECEBER-OPERACAO SECTION.
+           DISPLAY 'Enter with operation: '
+               ' "+" for sum, ' 
+               ' "-"  for subtract, '
+               ' "/" for divide or "*" for multiply'
+           ACCEPT OPERADOR.
+           DISPLAY '======== ======= ======='.
       *****************************************************************
-       003-IMPRIMIR-VALORES SECTION.
-           DISPLAY 
-               'Person: ' PRIMEIRO-NOME ' - ' 
-               GENERO ' - '
-               DIA '/' MES '/' ANO  ' - '
-               SALARIO-FORMATADO.
-           
+       003-CALCULAR SECTION.
+           EVALUATE TRUE
+              WHEN ADICAO
+                ADD OPERANDO-1, OPERANDO-2 GIVING RES-NUMERICO
+              WHEN SUBTRACAO
+                SUBTRACT OPERANDO-1 FROM OPERANDO-2 GIVING RES-NUMERICO
+              WHEN MULTIPLICACAO
+                MULTIPLY OPERANDO-1 BY OPERANDO-2 GIVING RES-NUMERICO
+              WHEN DIVISAO
+                DIVIDE OPERANDO-1 INTO OPERANDO-2 GIVING RES-NUMERICO
+              WHEN OTHER
+                DISPLAY 'Invalid operator, stopping the program...'
+                STOP RUN
+           END-EVALUATE.
+           MOVE RES-NUMERICO TO RES-FORMATADO.
+      *****************************************************************
+       004-IMPRIMIR-RESULTADO SECTION.
+           DISPLAY 'RESULT: ' RES-FORMATADO. 
                  
 
