@@ -1,1 +1,1 @@
-# First Program in COBOL
+# Calculator in COBOL
