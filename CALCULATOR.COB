@@ -1,71 +1,99 @@
-      *****************************************************************
-      *            AUTHOR = Rayan                                     *
-      *****************************************************************
        IDENTIFICATION DIVISION.
-      *****************************************************************
-       PROGRAM-ID. NEW-PROGRAM.
-       AUTHOR. Rayan Argolo.
-      *****************************************************************
+       PROGRAM-ID. PROG.
+       AUTHOR. RAYAN ARGOLO
+      ****************************************** 
        ENVIRONMENT DIVISION.
-      *****************************************************************
-       CONFIGURATION SECTION.
-       SPECIAL-NAMES.
-           DECIMAL-POINT IS COMMA.
-      *****************************************************************
+      ****************************************** 
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT CLIENTES ASSIGN TO './CLIENTES.txt'
+               ORGANIZATION IS SEQUENTIAL
+               ACCESS MODE IS SEQUENTIAL
+               FILE STATUS IS FS-CLIENTES.
+           SELECT SAIDA ASSIGN TO './SAIDA.txt'
+               ORGANIZATION IS SEQUENTIAL
+               ACCESS MODE IS SEQUENTIAL
+               FILE STATUS IS FS-CLIENTES.
+      ****************************************** 
        DATA DIVISION.
-      *****************************************************************
+      ****************************************** 
+       FILE SECTION.
+      ****************************************** 
+       FD CLIENTES
+           RECORDING IS F.
+       01 CLIENTE.
+           03 AGENCIA      PIC 9(04).
+           03 NOME         PIC X(12).
+      *        LAYOUT = 16 POSIÇÕES            *
+       FD SAIDA
+           RECORDING IS F.
+       01 CLIENTE-SAIDA    PIC X(13).
+      *        LAYOUT = 13 POSIÇÕES            *
+      ****************************************** 
        WORKING-STORAGE SECTION.
-      *****************************************************************
-       77 OPERANDO-1 PIC S9(04) VALUE ZEROS.
-       77 OPERANDO-2 PIC S9(04) VALUE ZEROS.
-       77 RES-NUMERICO PIC S9(04) VALUE ZEROS.
-       77 RES-FORMATADO PIC ZZZZ9 VALUE ZEROS.
-       77 OPERADOR PIC X(01).
-           88 ADICAO VALUE '+'.
-           88 SUBTRACAO VALUE '-'.
-           88 MULTIPLICACAO VALUE '*'.
-           88 DIVISAO VALUE '/'.
-      *****************************************************************
+       01 CNT-CLIENTES     PIC 9(02) USAGE COMP.
+       01 FS-CLIENTES      PIC 9(02).
+       01 FS-SAIDA-CLIENTES      PIC 9(02).
+       01 EOF-CLIENTES     PIC X(01) VALUE 'N'.
+      ****************************************** 
        PROCEDURE DIVISION.
-      *****************************************************************
-           PERFORM 001-RECEBER-VALORES.
-           PERFORM 002-RECEBER-OPERACAO.
-           PERFORM 003-CALCULAR. 
-           PERFORM 004-IMPRIMIR-RESULTADO.
-           STOP RUN.
-      *****************************************************************
-       001-RECEBER-VALORES SECTION.
-           DISPLAY 'First number: '.
-           ACCEPT OPERANDO-1 FROM CONSOLE.
-           DISPLAY 'Second number: '.
-           ACCEPT OPERANDO-2 FROM CONSOLE.
-           DISPLAY '======== ======= ======='.
-      *****************************************************************
-       002-RECEBER-OPERACAO SECTION.
-           DISPLAY 'Enter with operation: '
-               ' "+" for sum, ' 
-               ' "-"  for subtract, '
-               ' "/" for divide or "*" for multiply'
-           ACCEPT OPERADOR.
-           DISPLAY '======== ======= ======='.
-      *****************************************************************
-       003-CALCULAR SECTION.
-           EVALUATE TRUE
-              WHEN ADICAO
-                ADD OPERANDO-1, OPERANDO-2 GIVING RES-NUMERICO
-              WHEN SUBTRACAO
-                SUBTRACT OPERANDO-1 FROM OPERANDO-2 GIVING RES-NUMERICO
-              WHEN MULTIPLICACAO
-                MULTIPLY OPERANDO-1 BY OPERANDO-2 GIVING RES-NUMERICO
-              WHEN DIVISAO
-                DIVIDE OPERANDO-1 INTO OPERANDO-2 GIVING RES-NUMERICO
-              WHEN OTHER
-                DISPLAY 'Invalid operator, stopping the program...'
-                STOP RUN
-           END-EVALUATE.
-           MOVE RES-NUMERICO TO RES-FORMATADO.
-      *****************************************************************
-       004-IMPRIMIR-RESULTADO SECTION.
-           DISPLAY 'RESULT: ' RES-FORMATADO. 
-                 
+            PERFORM 001-VALIDAR THRU 001-FIM.
+            PERFORM 002-LER THRU 002-FIM.
+            PERFORM 003-ENCERRAR THRU 004-FIM.
+      ****************************************** 
 
+       001-VALIDAR SECTION.
+           DISPLAY 'EOF: ' EOF-CLIENTES.
+
+           OPEN INPUT CLIENTES.
+           OPEN OUTPUT SAIDA.
+
+           IF FS-CLIENTES NOT EQUAL TO ZEROS
+              OR FS-SAIDA-CLIENTES NOT EQUAL TO ZEROS
+                 DISPLAY 'Erro ao abrir arquivo, código: ' FS-CLIENTES
+                 PERFORM 003-ENCERRAR
+                 GOBACK
+           END-IF.
+
+       001-FIM. 
+           EXIT.
+      ****************************************** 
+
+       002-LER SECTION.
+           PERFORM UNTIL EOF-CLIENTES EQUAL 'S'
+               READ CLIENTES
+                       AT END
+                           MOVE 'S' TO EOF-CLIENTES
+                       NOT AT END  
+                           ADD 1 TO CNT-CLIENTES
+                           PERFORM 003-ESCREVER
+               END-READ
+           END-PERFORM.
+
+       002-FIM. 
+           EXIT.
+      ****************************************** 
+       003-ESCREVER SECTION.
+           STRING  
+               NOME DELIMITED BY SIZE
+               '+' DELIMITED BY SIZE
+           INTO CLIENTE-SAIDA.
+
+           WRITE CLIENTE-SAIDA.
+           IF FS-SAIDA-CLIENTES NOT EQUAL ZEROS
+               DISPLAY 'Writing error: ' FS-SAIDA-CLIENTES
+               PERFORM 003-ENCERRAR
+           END-IF.
+
+       003-FIM.
+           EXIT.
+      ****************************************** 
+
+       003-ENCERRAR SECTION.
+           DISPLAY 'Registered customers: ' CNT-CLIENTES
+           CLOSE CLIENTES.
+           CLOSE SAIDA.
+           STOP RUN.
+       004-FIM. 
+           EXIT.
+      ****************************************** 

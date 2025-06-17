@@ -1,2 +1,1 @@
-# Calculator in COBOL - By Rayan Argolo
-![alt text](image.png)
+# INPUT / OUTPUT IN COBOLÇ
